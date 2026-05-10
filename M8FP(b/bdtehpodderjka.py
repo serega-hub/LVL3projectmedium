@@ -34,7 +34,12 @@ class DB_Manager:
 
     def insert_request(self, user_id, username, department, issue):
         sql = "INSERT INTO requests (user_id, username, department, issue) VALUES (?, ?, ?, ?)"
-        self.__execute(sql, (user_id, username, department, issue))
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute(sql, (user_id, username, department, issue))
+            conn.commit()
+            return cur.lastrowid
 
     def insert_faq(self, data):
         
