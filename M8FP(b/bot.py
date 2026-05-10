@@ -33,15 +33,13 @@ def save_request(message, dept):
         username = message.from_user.username or "Unknown"
         issue = message.text
         
-        # 1. Сохраняем
-        manager.insert_request(user_id, username, dept, issue)
         
-        # 2. Уведомляем пользователя сразу
-        bot.send_message(message.chat.id, "✅ Ваша заявка принята!")
+        request_id = manager.insert_request(user_id, username, dept, issue)
+        
+        bot.send_message(message.chat.id, f"✅ Ваша заявка №{request_id} принята!")
 
-        # 3. Уведомляем админов
-        # Передаем просто строчку вместо ID, если не получается вытащить ID из БД
-        notify_admins("НОВАЯ", username, dept, issue)
+        
+        notify_admins(request_id, username, dept, issue)
         
     except Exception as e:
         print(f"Ошибка в save_request: {e}")
@@ -92,9 +90,7 @@ def ask_issue(call):
     msg = bot.send_message(call.message.chat.id, f"Опишите проблему для отдела {dept}:")
     bot.register_next_step_handler(msg, save_request, dept)
 
-def save_requestt(message, dept):
-    manager.insert_request(message.from_user.id, message.from_user.username, dept, message.text)
-    bot.send_message(message.chat.id, "✅ Ваша заявка сохранена в БД!")
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('status_'))
 def change_status(call):
